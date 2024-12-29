@@ -1,118 +1,78 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import React from 'react';
-import type {PropsWithChildren} from 'react';
 import {
   SafeAreaView,
-  ScrollView,
   StatusBar,
-  StyleSheet,
-  Text,
   useColorScheme,
-  View,
+  Text,
+  FlatList,
 } from 'react-native';
+import React, {useState} from 'react';
+import {BackgroundColor, Color, Normalize} from './constants/constants';
+import RenderData from './component/renderData';
+import AddTextInput from './component/addTextInput';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
-
-function Section({children, title}: SectionProps): JSX.Element {
+const App: React.FC = () => {
   const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
+  const [task, setTask] = useState('');
+  const [data, setData] = useState([]);
+  const [editIndex, setEditIndex] = useState(-1);
 
-function App(): JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+  const addTask = () => {
+    if (task) {
+      if (editIndex !== -1) {
+        const updatedTask = [...data];
+        updatedTask[editIndex] = task;
+        setData(updatedTask);
+        setEditIndex(-1);
+      } else {
+        setData([...data, task]);
+      }
+      setTask('');
+    }
+  };
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+  const editTask = index => {
+    const taskToEdit = data[index];
+    setTask(taskToEdit);
+    setEditIndex(index);
+  };
+
+  const deleteTask = () => {
+    const updatedTask = [...data];
+    updatedTask.splice(editIndex, 1);
+    setData(updatedTask);
   };
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
+    <SafeAreaView
+      style={{
+        flex: 1,
+        backgroundColor: BackgroundColor(),
+        marginHorizontal: 20,
+      }}>
+      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+      <Text
+        style={{fontSize: Normalize(26), color: Color(), fontWeight: '600'}}>
+        Todo App
+      </Text>
+      <AddTextInput
+        task={task}
+        setTask={setTask}
+        editIndex={editIndex}
+        addTask={addTask}
       />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
+      <FlatList
+        data={data}
+        renderItem={({item, index}) => (
+          <RenderData
+            item={item}
+            index={index}
+            editTask={editTask}
+            deleteTask={deleteTask}
+          />
+        )}
+      />
     </SafeAreaView>
   );
-}
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
+};
 
 export default App;
